@@ -3,23 +3,21 @@
   "authors": [
     "Elizabeth Mattijsen"
   ],
-  "build-depends": [
-  ],
   "depends": [
   ],
-  "description": "blah blah blah",
+  "description": "Implement Repology Version logic",
   "license": "Artistic-2.0",
   "name": "Version::Repology",
-  "perl": "6.d",
   "provides": {
     "Version::Repology": "lib/Version/Repology.rakumod"
   },
-  "resources": [
-  ],
-  "source-url": "",
-  "tags": [
-  ],
-  "test-depends": [
+  "raku": "6.d",
+  "support": {
+    "bugtracker": "https://github.com/lizmat/Version-Repology/issues",
+    "email": "liz@raku.rocks",
+    "source": "https://github.com/lizmat/Version-Repology.git"
+  },
+  "tags": [ "VERSION", "REPOLOGY"
   ],
   "version": "0.0.1"
 }
