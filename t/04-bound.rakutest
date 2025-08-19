@@ -1,0 +1,65 @@
+use Test;
+use Version::Repology;
+
+#- bound -----------------------------------------------------------------------
+my int $bound-line = $?LINE + 2;
+my @bound = <<
+  0.99999    1.0  Any  Any  Less
+  1.0alpha   1.0  Any  Any  Less
+  1.0alpha0  1.0  Any  Any  Less
+  1.0        1.0  Any  Any  Same
+  1.0patch   1.0  Any  Any  More
+  1.0patch0  1.0  Any  Any  More
+  1.0.1      1.0  Any  Any  More
+  1.1        1.0  Any  Any  More
+
+  0.99999    1.0  Any  lower  Less
+  1.0alpha   1.0  Any  lower  Less
+  1.0alpha0  1.0  Any  lower  Less
+  1.0        1.0  Any  lower  Same
+  1.0patch   1.0  Any  lower  More
+  1.0patch0  1.0  Any  lower  More
+  1.0.1      1.0  Any  lower  More
+  1.1        1.0  Any  lower  More
+
+  0.99999    1.0  Any  upper  Less
+  1.0alpha   1.0  Any  upper  Less
+  1.0alpha0  1.0  Any  upper  Less
+  1.0        1.0  Any  upper  Less
+  1.0patch   1.0  Any  upper  Less
+  1.0patch0  1.0  Any  upper  Less
+  1.0.1      1.0  Any  upper  Less
+  1.1        1.0  Any  upper  Less
+
+  1.0  1.0  lower  lower  Same
+  1.0  1.0  upper  upper  Same
+  1.0  1.0  lower  upper  Less
+
+  1.0  1.1  upper  lower  Less
+
+  0  0.0  upper  upper  More
+  0  0.0  lower  lower  Less
+>>;
+
+plan @bound / 5;
+
+for @bound -> $left, $right, $bound-left, $bound-right, $order {
+    my $vleft := Version::Repology.new(
+      $left, :bound($bound-left eq 'Any' ?? Any !! $bound-left)
+    );
+    my $vright := Version::Repology.new(
+      $right, :bound($bound-right eq 'Any' ?? Any !! $bound-right)
+    );
+
+    unless is-deeply $vleft.cmp($vright), ::($order),
+      "$order: $left $bound-left cmp $right $bound-right" {
+
+        note "On line $bound-line: $vleft.cmp($vright)";
+        note "   left: $vleft.parts.join(':') $vleft.ranks()";
+        note "  right: $vright.parts.join(':') $vright.ranks()";
+#        exit;
+    }
+    ++$bound-line;
+}
+
+# vim: expandtab shiftwidth=4

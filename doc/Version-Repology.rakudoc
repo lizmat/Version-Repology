@@ -1,0 +1,48 @@
+=begin pod
+
+=head1 NAME
+
+Version::Repology - Implement Repology Version logic
+
+=head1 SYNOPSIS
+
+=begin code :lang<raku>
+use Version::Repology;
+=end code
+
+=head1 DESCRIPTION
+
+The C<Version::Repology> distribution provides a C<Version::Repology>
+class that encapsulates the logic for creating a C<Version>-like
+object with semantics matching the Repology implementation of
+L<C<libversion>|https://github.com/repology/libversion/tree/master?tab=readme-ov-file#libversion>.
+
+In order to avoid any dependencies, this implementation is a pure
+Raku implementation.
+
+=head1 CREDITS
+
+This module is based on the work done by Dmitry Marakasov on the
+L<C<libversion>|https://github.com/repology/libversion/tree/master?tab=readme-ov-file#libversion>
+project.
+
+=head1 AUTHOR
+
+Elizabeth Mattijsen <liz@raku.rocks>
+
+Source can be located at: https://github.com/lizmat/Version-Repology .
+Comments and Pull Requests are welcome.
+
+If you like this module, or what I’m doing more generally, committing to a
+L<small sponsorship|https://github.com/sponsors/lizmat/>  would mean a great
+deal to me!
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright 2025 Elizabeth Mattijsen
+
+This library is free software; you can redistribute it and/or modify it under the Artistic License 2.0.
+
+=end pod
+
+# vim: expandtab shiftwidth=4

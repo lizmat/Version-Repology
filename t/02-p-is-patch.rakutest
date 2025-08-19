@@ -1,0 +1,56 @@
+use Test;
+use Version::Repology;
+
+my int $p-patch-line = $?LINE + 2;
+my @p-patch = <<
+  1.0p1  1.0p1  False  False  Same
+  1.0p1  1.0p1  True   True   Same
+  1.0p1  1.0p1  True   False  More
+  1.0p1  1.0p1  False  True   Less
+
+  1.0p1  1.0P1  False  False  Same
+  1.0p1  1.0P1  True   True   Same
+
+  1.0  1.0p1  False  False  More
+  1.0  1.0p1  True   False  More
+  1.0  1.0p1  False  True   Less
+
+  1.0  1.0.p1  False  False  More
+  1.0  1.0.p1  True   False  More
+  1.0  1.0.p1  False  True   Less
+
+  1.0  1.0.p.1  False  False  More
+  1.0  1.0.p.1  True   False  More
+  1.0  1.0.p.1  False  True   Less
+
+  1.0  1.0p.1  False  False  Less
+  1.0  1.0p.1  True   False  Less
+  1.0  1.0p.1  False  True   Less
+
+  1.0p1  1.0pre1    False  False  Same
+  1.0p1  1.0patch1  False  False  Less
+  1.0p1  1.0post1   False  False  Less
+
+  1.0p1  1.0pre1    True  True  More
+  1.0p1  1.0patch1  True  True  Same
+  1.0p1  1.0post1   True  True  Same
+>>;
+
+plan @p-patch / 5;
+
+for @p-patch -> $left, $right, $p-left, $p-right, $order {
+    my $vleft  := Version::Repology.new($left,  :p-is-patch(::($p-left )));
+    my $vright := Version::Repology.new($right, :p-is-patch(::($p-right)));
+
+    unless is-deeply $vleft.cmp($vright), ::($order),
+      "$order: $left $p-left cmp $right $p-right" {
+
+        note "On line $p-patch-line: $vleft.cmp($vright)";
+        note "   left: $vleft.parts.join(':') $vleft.ranks()";
+        note "  right: $vright.parts.join(':') $vright.ranks()";
+#        exit;
+    }
+    ++$p-patch-line;
+}
+
+# vim: expandtab shiftwidth=4

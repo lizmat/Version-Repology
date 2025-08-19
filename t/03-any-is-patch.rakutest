@@ -1,0 +1,46 @@
+use Test;
+use Version::Repology;
+
+#- any-is-patch ----------------------------------------------------------------
+my int $any-patch-line = $?LINE + 2;
+my @any-patch = <<
+  1.0a1  1.0a1  False  False  Same
+  1.0a1  1.0a1  True   True   Same
+  1.0a1  1.0a1  True   False  More
+  1.0a1  1.0a1  False  True   Less
+
+  1.0  1.0a1  False  False  More
+  1.0  1.0a1  True   False  More
+  1.0  1.0a1  False  True   Less
+
+  1.0  1.0.a1  False  False  More
+  1.0  1.0.a1  True   False  More
+  1.0  1.0.a1  False  True   Less
+
+  1.0  1.0.a.1  False  False  More
+  1.0  1.0.a.1  True   False  More
+  1.0  1.0.a.1  False  True   Less
+
+  1.0  1.0a.1  False  False  Less
+  1.0  1.0a.1  True   False  Less
+  1.0  1.0a.1  False  True   Less
+>>;
+
+plan @any-patch / 5;
+
+for @any-patch -> $left, $right, $any-left, $any-right, $order {
+    my $vleft  := Version::Repology.new($left,  :any-is-patch(::($any-left )));
+    my $vright := Version::Repology.new($right, :any-is-patch(::($any-right)));
+
+    unless is-deeply $vleft.cmp($vright), ::($order),
+      "$order: $left $any-left cmp $right $any-right" {
+
+        note "On line $any-patch-line: $vleft.cmp($vright)";
+        note "   left: $vleft.parts.join(':') $vleft.ranks()";
+        note "  right: $vright.parts.join(':') $vright.ranks()";
+#        exit;
+    }
+    ++$any-patch-line;
+}
+
+# vim: expandtab shiftwidth=4
