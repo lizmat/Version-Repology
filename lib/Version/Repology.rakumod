@@ -8,6 +8,7 @@ my constant %special =
   "alpha",   pre-release,
   "beta",    pre-release,
   "rc",      pre-release,
+  "pre",     pre-release,
   "post",    post-release,
   "patch",   post-release,
   "pl",      post-release,
@@ -31,9 +32,6 @@ class Version::Repology:ver<0.0.1>:auth<zef:lizmat> {
             :$any-is-patch,
             :$bound,
     --> Nil) {
-        my @parts = $spec.comb(/ \d+ || <[ a..z A..Z ]>+ /).map: {
-            .Int // $_
-        }
 
         $!bound := $bound.defined
           ?? $bound eq 'upper'
@@ -43,53 +41,65 @@ class Version::Repology:ver<0.0.1>:auth<zef:lizmat> {
               !! die "Unknown bound indicator: $bound.  Must be 'upper' or 'lower'"
           !! zero;
 
-        my @ranks is List = @parts.kv.map: -> int $i, $part is copy {
+        my @parts;
+        my @ranks;
 
-            # Numeric component
-            if $part ~~ Int {
-                $part ?? non-zero !! $!bound
+        my sub add-number($number --> Nil) {
+            @parts.push: $number;
+            @ranks.push: $number ?? non-zero !! $!bound;
+        }
+
+        for $spec.comb(/ <[ 0..9 a..z A..Z ]>+ /) -> $outer {
+            with $outer.Int -> $number {
+                add-number($number);
             }
-
-            # Just a string
             else {
-                $part .= lc;
+                my @inner = $outer
+                  .comb(/ \d+ | <[ a..z A..Z ]>+ /)
+                  .map: { .Int // $_ }
 
-                # Only the first letter lowercased is significant
-                @parts[$i] = $part.substr(0,1);
+                for @inner.kv -> int $i, $part is copy {
+                    if $part ~~ Int {
+                        add-number($part);
+                    }
+                    else {
+                        $part .= lc;
+                        @parts.push: $part.substr(0,1);  # 1st letter only
+                        @ranks.push: do if $any-is-patch {
+                            post-release
+                        }
 
-                if $any-is-patch {
-                    post-release
-                }
-                else {
-                    # A special case exists for alphabetic component which
-                    # follows numeric component, and is not followed by
-                    # another numeric component (1.0a, 1.0a.1, but not 1.0a1).
-                    # Such alphabetic component is assigned a different rank,
-                    # LETTER_SUFFIX, which follows NONZERO
-                    my $rank = $i                  # not first
-                      && @parts[$i - 1] ~~ Int     # following numeric
-                      && @parts[$i + 1]            # preceding something
-                      && !(@parts[$i + 1] ~~ Int)  # NOT preceding numeric
-                      ?? letter-suffix
-                      !! $p-is-patch && $part eq 'p'
-                        ?? post-release
-                        !! pre-release;
+                        # Need to determine the rank
+                        else {
+# A special case exists for alphabetic component which follows numeric
+# component, and is not followed by another numeric component (1.0a,
+# 1.0a.1, but not 1.0a1). Such alphabetic component is assigned a
+# different rank, LETTER_SUFFIX, which follows NONZERO
+                            my $rank = $i                # not first
+                              && @inner[$i-1] ~~ Int     # following numeric
+                              && $i == @inner.end        # last one
+                              ?? letter-suffix
+                              !! $p-is-patch && $part eq 'p'
+                                ?? post-release
+                                !! pre-release;
 
-                    # Handle the special cases
-                    for @special-keys {
-                        if $part.starts-with($_) {
-                            $rank = %special{$_};
-                            last;
+                            # Handle the special cases
+                            for @special-keys {
+                                if $part.starts-with($_) {
+                                    $rank = %special{$_};
+                                    last;
+                                }
+                            }
+
+                            $rank
                         }
                     }
-
-                    $rank
                 }
             }
         }
 
         @!parts := @parts.List;
-        @!ranks := @ranks;
+        @!ranks := @ranks.List;
     }
 
     multi method Str(Version::Repology:D:) {
