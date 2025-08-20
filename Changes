@@ -1,6 +1,8 @@
 Revision history for Version::Repology
 
 {{$NEXT}}
+
+0.0.2  2025-08-20T14:57:21+02:00
     - Add support for ":no-leading-zero" named argument
 
 0.0.1  2025-08-20T13:26:24+02:00
