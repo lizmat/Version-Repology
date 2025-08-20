@@ -115,7 +115,7 @@ only.
 
 The following C<infix> candidates are exported:
 =item cmp (return C<Order>)
-=item == != < <= > >= (return C<Bool>)
+=item eqv == != < <= > >= (return C<Bool>)
 
 =head1 ALGORITHM
 

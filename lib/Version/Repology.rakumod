@@ -222,4 +222,12 @@ my multi sub infix:«>=» (
     $a.cmp($b) != Less
 }
 
+my multi sub infix:<eqv> (
+  Version::Repology:D $a, Version::Repology:D $b
+--> Bool:D) is export {
+    $a.ranks eqv $b.ranks
+      && $a.parts eqv $b.parts
+      && $a.bound ==  $b.bound
+}
+
 # vim: expandtab shiftwidth=4

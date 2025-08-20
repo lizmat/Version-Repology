@@ -121,7 +121,7 @@ The following `infix` candidates are exported:
 
   * cmp (return `Order`)
 
-  * == != < <= > >= (return `Bool`)
+  * eqv == != < <= > >= (return `Bool`)
 
 ALGORITHM
 =========

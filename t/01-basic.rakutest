@@ -1,7 +1,7 @@
 use Test;
 use Version::Repology;
 
-plan 22;
+plan 33;
 
 my $v = Version::Repology.new("1.0foo.bar");
 isa-ok $v, Version::Repology;
@@ -13,12 +13,26 @@ is-deeply $v.ranks, (non-zero, zero, letter-suffix, pre-release),
   'are the ranks ok';
 is-deeply $v.bound, zero, 'default bound logic ok';
 
-is-deeply $v cmp $v, Same, 'can we compare with cmp';
-is-deeply $v < $v,  False, 'can we compare with <';
-is-deeply $v <= $v,  True, 'can we compare with <=';
-is-deeply $v >= $v,  True, 'can we compare with >=';
-is-deeply $v > $v,  False, 'can we compare with >';
-is-deeply $v != $v, False, 'can we compare with !=';
+is-deeply $v cmp $v,  Same, 'can we compare with cmp';
+is-deeply $v eqv $v,  True, 'can we compare with eqv';
+is-deeply $v  == $v,  True, 'can we compare with ==';
+is-deeply $v  <  $v, False, 'can we compare with <';
+is-deeply $v  <= $v,  True, 'can we compare with <=';
+is-deeply $v  >= $v,  True, 'can we compare with >=';
+is-deeply $v  >  $v, False, 'can we compare with >';
+is-deeply $v  != $v, False, 'can we compare with !=';
+
+my $z = Version::Repology.new("");
+isa-ok $v, Version::Repology;
+
+is-deeply $v cmp $z,  More, 'can we compare z with cmp';
+is-deeply $v eqv $z, False, 'can we compare z with eqv';
+is-deeply $v  == $z, False, 'can we compare z with ==';
+is-deeply $v  <  $z, False, 'can we compare z with <';
+is-deeply $v  <= $z, False, 'can we compare z with <=';
+is-deeply $v  >= $z,  True, 'can we compare z with >=';
+is-deeply $v  >  $z,  True, 'can we compare z with >';
+is-deeply $v  != $z,  True, 'can we compare z with !=';
 
 for \(:upper-bound), \(:bound<upper>) -> \c {
     my $u = Version::Repology.new("1.0", |c);
