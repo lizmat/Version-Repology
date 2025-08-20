@@ -1,8 +1,9 @@
 Revision history for Version::Repology
 
 {{$NEXT}}
+    - Add infix methods: == != <= < > >=
     - Also export infix:<eqv> candidate
-    - Add more tests
+    - Add more tests and much more documentation
 
 0.0.2  2025-08-20T14:57:21+02:00
     - Add support for ":no-leading-zero" named argument

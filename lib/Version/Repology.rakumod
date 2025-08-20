@@ -17,7 +17,7 @@ my constant %special =
 my constant @special-keys = %special.keys.sort(-*.chars);
 
 #- Version::Repology -----------------------------------------------------------
-class Version::Repology:ver<0.0.2>:auth<zef:lizmat> {
+class Version::Repology:ver<0.0.3>:auth<zef:lizmat> {
     has @.parts;
     has $.bound;
     has @.ranks is built(False);
@@ -177,6 +177,12 @@ class Version::Repology:ver<0.0.2>:auth<zef:lizmat> {
              $!bound cmp $obound
         }
     }
+
+    method eqv(Version::Repology:D: Version::Repology:D $other) {
+        @!ranks eqv $other.ranks
+          && @!parts eqv $other.parts
+          && $!bound ==  $other.bound
+    }
 }
 
 #- infixes ---------------------------------------------------------------------
@@ -225,9 +231,20 @@ my multi sub infix:«>=» (
 my multi sub infix:<eqv> (
   Version::Repology:D $a, Version::Repology:D $b
 --> Bool:D) is export {
-    $a.ranks eqv $b.ranks
-      && $a.parts eqv $b.parts
-      && $a.bound ==  $b.bound
+    $a.eqv($b)
+}
+
+#- other infix methods ---------------------------------------------------------
+# Note that this is a bit icky, but it allows for a direct mapping of the
+# infix op name to a method for comparison with the $a."=="($b) syntax,
+# without having to have the above infixes to be imported
+BEGIN {
+    Version::Repology.^add_method: "==", { $^a.cmp($^b) == Same }  # UNCOVERABLE
+    Version::Repology.^add_method: "!=", { $^a.cmp($^b) != Same }  # UNCOVERABLE
+    Version::Repology.^add_method: "<",  { $^a.cmp($^b) == Less }  # UNCOVERABLE
+    Version::Repology.^add_method: "<=", { $^a.cmp($^b) != More }  # UNCOVERABLE
+    Version::Repology.^add_method: ">",  { $^a.cmp($^b) == More }  # UNCOVERABLE
+    Version::Repology.^add_method: ">=", { $^a.cmp($^b) != Less }  # UNCOVERABLE
 }
 
 # vim: expandtab shiftwidth=4

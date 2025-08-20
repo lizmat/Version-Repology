@@ -14,10 +14,11 @@ use Version::Repology;
 my $left  = Version::Repology.new("1.0");
 my $right = Version::Repology.new("1.1");
 
-# object interface
+# method interface
 say $left.cmp($right);  # Less
+say $left."<"($right);  # True
 
-# Infix interface
+# infix interface
 say $left cmp $right;  # Less
 say $left < $right;    # True
 ```
@@ -112,16 +113,91 @@ If in comparison two objects are the same, then select this one as being **lower
 
 Remove any leading `0` parts from a version string so that `0.0.1` is the same as `1`. If not specified, or specified with a false value, will **not** remove any leading `0` parts.
 
-This feature is an additional feature in the Raku implementation only.
+This is an additional feature in the Raku implementation only.
+
+ACCESSORS
+=========
+
+parts
+=====
+
+```raku
+my $a  = Version::Repology.new("1.0.foo");
+dd $a.parts;  # (1, 0, "f")
+```
+
+Returns the values that are associated with each logical part of the version.
+
+ranks
+=====
+
+```raku
+my $a  = Version::Repology.new("1.0.foo");
+say $a.ranks;  # (non-zero zero pre-release)
+```
+
+Returns the `Rank` enums that are associated with each logical part of the version.
+
+bound
+=====
+
+```raku
+my $a  = Version::Repology.new("1.0", :upper-bound");
+say $a.bound;  # upper-bound
+```
+
+Returns the special bound `Rank` value. This is `zero` by default, but can be changed with the `:upper-bound` and `:lower-bound` named arguments on object instantiation.
+
+OTHER METHODS
+=============
+
+cmp
+---
+
+```raku
+my $left  = Version::Repology.new("1.0");
+my $right = Version::Repology.new("1.1");
+
+say $left.cmp($left);   # Same
+say $left.cmp($right);  # Less
+say $right.cmp($left);  # More
+```
+
+The `cmp` method returns the `Order` of a comparison of the invocant and the positional argument, which is either `Less`, `Same`, or `More`. This method is the workhorse for comparisons.
+
+eqv
+---
+
+```raku
+my $left  = Version::Repology.new("1.0foo");
+my $right = Version::Repology.new("1.0f");
+
+say $left.eqv($right);  # True
+```
+
+The `eqv` method returns whether the internal state of two `Version::Repology` objects is identical. Note that does not necessarily means that their stringification is the same, as any alphabetical string is internally shortened to first lowercased character for comparisons.
+
+== != < <= > >=
+---------------
+
+```raku
+my $left  = Version::Repology.new("1.0foo");
+my $right = Version::Repology.new("1.0f");
+
+say $left."=="($left);  # True
+say $left."<"($right);  # True
+```
+
+These oddly named methods provide the same functionality as their infix counterparts. Please note that you **must** use the `"xx"()` syntax, because otherwise the Raku compiler will assume you've made a syntax error.
 
 EXPORTED INFIXES
 ================
 
-The following `infix` candidates are exported:
+The following `infix` candidates handling `Version::Repology` are exported:
 
-  * cmp (return `Order`)
+  * cmp (returns `Order`)
 
-  * eqv == != < <= > >= (return `Bool`)
+  * eqv == != < <= > >= (returns `Bool`)
 
 ALGORITHM
 =========

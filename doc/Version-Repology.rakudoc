@@ -12,10 +12,11 @@ use Version::Repology;
 my $left  = Version::Repology.new("1.0");
 my $right = Version::Repology.new("1.1");
 
-# object interface
+# method interface
 say $left.cmp($right);  # Less
+say $left."<"($right);  # True
 
-# Infix interface
+# infix interface
 say $left cmp $right;  # Less
 say $left < $right;    # True
 =end code
@@ -108,14 +109,111 @@ Remove any leading C<0> parts from a version string so that C<0.0.1>
 is the same as C<1>.  If not specified, or specified with a false
 value, will B<not> remove any leading C<0> parts.
 
-This feature is an additional feature in the Raku implementation
-only.
+This is an additional feature in the Raku implementation only.
+
+=head1 ACCESSORS
+
+=head1 parts
+
+=begin code :lang<raku>
+my $a  = Version::Repology.new("1.0.foo");
+dd $a.parts;  # (1, 0, "f")
+=end code
+
+Returns the values that are associated with each logical part of
+the version.
+
+=head1 ranks
+
+=begin code :lang<raku>
+my $a  = Version::Repology.new("1.0.foo");
+say $a.ranks;  # (non-zero zero pre-release)
+=end code
+
+Returns the C<Rank> enums that are associated with each logical part
+of the version.
+
+=head1 bound
+
+=begin code :lang<raku>
+my $a  = Version::Repology.new("1.0", :upper-bound");
+say $a.bound;  # upper-bound
+=end code
+
+Returns the special bound C<Rank> value.  This is C<zero> by default,
+but can be changed with the C<:upper-bound> and C<:lower-bound> named
+arguments on object instantiation.
+
+=head1 OTHER METHODS
+
+=head2 cmp
+
+=begin code :lang<raku>
+my $left  = Version::Repology.new("1.0");
+my $right = Version::Repology.new("1.1");
+
+say $left.cmp($left);   # Same
+say $left.cmp($right);  # Less
+say $right.cmp($left);  # More
+=end code
+
+The C<cmp> method returns the C<Order> of a comparison of the invocant
+and the positional argument, which is either C<Less>, C<Same>, or
+C<More>.  This method is the workhorse for comparisons.
+
+=head2 eqv
+
+=begin code :lang<raku>
+my $left  = Version::Repology.new("1.0foo");
+my $right = Version::Repology.new("1.0f");
+
+say $left.eqv($right);  # True
+=end code
+
+The C<eqv> method returns whether the internal state of two
+C<Version::Repology> objects is identical.  Note that does not
+necessarily means that their stringification is the same, as any
+alphabetical string is internally shortened to first lowercased
+character for comparisons.
+
+=head2 == != < <= > >=
+
+=begin code :lang<raku>
+my $left  = Version::Repology.new("1.0foo");
+my $right = Version::Repology.new("1.0f");
+
+say $left."=="($left);  # True
+say $left."<"($right);  # True
+=end code
+
+These oddly named methods provide the same functionality as their
+infix counterparts.  Please note that you B<must> use the C<"xx"()>
+syntax, because otherwise the Raku compiler will assume you've made
+a syntax error.
 
 =head1 EXPORTED INFIXES
 
-The following C<infix> candidates are exported:
-=item cmp (return C<Order>)
-=item eqv == != < <= > >= (return C<Bool>)
+The following C<infix> candidates handling C<Version::Repology> are exported:
+=item cmp (returns C<Order>)
+=item eqv == != < <= > >= (returns C<Bool>)
+
+=head1 EXPORTED ENUMS
+
+=head2 Rank
+
+The C<Rank> enum is used internally to facilitate the comparison between two
+objects.  It is probably of little use outside the scope of the module itself.
+But just in case it B<may> be useful in some situations, it B<is> exported.
+
+It provides the following numeric enum values:
+=item none
+=item lower-bound
+=item pre-release
+=item zero
+=item post-release
+=item non-zero
+=item letter-suffix
+=item upper-bound
 
 =head1 ALGORITHM
 
