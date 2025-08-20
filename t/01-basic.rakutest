@@ -1,223 +1,35 @@
 use Test;
 use Version::Repology;
 
-#- Same ------------------------------------------------------------------------
-my int $equal-line = $?LINE + 2;
-my @equal = <<
-  0            0
-  0a           0a
-  a            a
-  a0           a0
-  0a1          0a1
-  0a1b2        0a1b2
-  1alpha1      1alpha1
-  foo          foo
-  1.2.3        1.2.3
-  hello.world  hello.world
+plan 20;
 
-  1    1.0
-  1    1.0.0
-  1.0  1.0.0
-  1.0  1.0.0.0.0.0.0.0
+my $v = Version::Repology.new("1.0foo.bar");
+isa-ok $v, Version::Repology;
 
-  00100.00100  100.100
-  0            000000000000000
+is $v, "1.0.f.b", 'is stringification correct';
+is $v.raku, 'Version::Repology.new("1.0.f.b")', 'is .raku ok';
+is-deeply $v.parts, (1,0,"f","b"), 'are the parts ok';
+is-deeply $v.ranks, (non-zero, zero, letter-suffix, pre-release),
+  'are the ranks ok';
+is-deeply $v.bound, zero, 'default bound logic ok';
 
-  1.0a0     1.0.a0
-  1.0beta3  1.0.b3
+is-deeply $v cmp $v, Same, 'can we compare with cmp';
+is-deeply $v < $v,  False, 'can we compare with <';
+is-deeply $v <= $v,  True, 'can we compare with <=';
+is-deeply $v >= $v,  True, 'can we compare with >=';
+is-deeply $v > $v,  False, 'can we compare with >';
+is-deeply $v != $v, False, 'can we compare with !=';
 
-  a       A
-  1alpha  1ALPHA
-  alpha1  ALPHA1
-
-  a  alpha
-  b  beta
-  p  prerelease
-
-  1.0.alpha.2  1_0_alpha_2
-  1.0.alpha.2  1-0-alpha-2
-  1.0.alpha.2  '1,0:alpha-2'
-
-  ..1....2....3..  1.2.3
-  .-~1~-.-~2~-     1.2
-  .,:;~+-_         0
-
-  ""  ""
-  ""  0
-
-  1.0alpha1  1.0alpha1
-  1.0alpha1  1.0.alpha1
-  1.0alpha1  1.0alpha.1
-  1.0alpha1  1.0.alpha.1
-
-  1.0patch1  1.0patch1
-  1.0patch1  1.0.patch1
-  1.0patch1  1.0patch.1
-  1.0patch1  1.0.patch.1
->>;
-
-#- Less ------------------------------------------------------------------------
-my int $less-line = $?LINE + 4;
-my @less = <<
-  0.0.0           0.0.1
-  0.0.1           0.0.2
-  0.0.2           0.0.10
-  0.0.2           0.1.0
-  0.0.10          0.1.0
-  0.1.0           0.1.1
-  0.1.1           10.0.0
-  10.0.0          100.0.0
-  10.10000.10000  11.0.0
-
-  999999999999999999                      1000000000000000000
-  99999999999999999999999999999999999998  99999999999999999999999999999999999999
-
-  1.0   1.0a
-  1.0a  1.0b
-  1.0b  1.1
-  a     0
-  1.a   1.0
-
-  1.0.a  1.0.b
-  1.0.b  1.0.c
-  1.0.c  1.0.0
-
-  ""  1
-
-  1.0.alpha1  1.0.alpha2
-  1.0.alpha2  1.0.beta1
-  1.0.beta1   1.0.beta2
-  1.0.beta2   1.0.rc1
-  1.0.beta2   1.0.pre1
-  1.0.rc1     1.0
-  1.0.pre1    1.0
-
-  1.0alpha1  1.0alpha2
-  1.0alpha2  1.0beta1
-  1.0beta1   1.0beta2
-  1.0beta2   1.0pre1
-  1.0rc1     1.0
-  1.0pre1    1.0
-
-  0.9        1.0alpha1
-  1.0alpha1  1.0
-  1.0alpha1  1.0.1
-  1.0alpha1  1.1
-
-  0.9       1.0beta1
-  1.0beta1  1.0
-  1.0beta1  1.0.1
-  1.0beta1  1.1
-
-  0.9       1.0pre-1
-  1.0pre-1  1.0
-  1.0pre-1  1.0.1
-  1.0pre-1  1.1
-
-  0.9              1.0prerelease-1
-  1.0prerelease-1  1.0
-  1.0prerelease-1  1.0.1
-  1.0prerelease-1  1.1
-
-  0.9      1.0rc-1
-  1.0rc-1  1.0
-  1.0rc-1  1.0.1
-  1.0rc-1  1.1
-
-  0.9        1.0patch1
-  1.0        1.0patch1
-  1.0patch1  1.0.1
-  1.0patch1  1.1
-
-  0.9         1.0.patch1
-  1.0         1.0.patch1
-  1.0.patch1  1.0.1
-  1.0.patch1  1.1
-
-  0.9         1.0patch.1
-  1.0         1.0patch.1
-  1.0patch.1  1.0.1
-  1.0patch.1  1.1
-
-  0.9          1.0.patch.1
-  1.0          1.0.patch.1
-  1.0.patch.1  1.0.1
-  1.0.patch.1  1.1
-
-  0.9       1.0post1
-  1.0       1.0post1
-  1.0post1  1.0.1
-  1.0post1  1.1
-
-  0.9                       1.0postanythinggoeshere1
-  1.0                       1.0postanythinggoeshere1
-  1.0postanythinggoeshere1  1.0.1
-  1.0postanythinggoeshere1  1.1
-
-  0.9     1.0pl1
-  1.0     1.0pl1
-  1.0pl1  1.0.1
-  1.0pl1  1.1
-
-  0.9         1.0errata1
-  1.0         1.0errata1
-  1.0errata1  1.0.1
-  1.0errata1  1.1
-
-  1.0alpha   1.0
-  1.0.alpha  1.0
-
-  1.0beta   1.0
-  1.0.beta  1.0
-
-  1.0rc   1.0
-  1.0.rc  1.0
-
-  1.0pre   1.0
-  1.0.pre  1.0
-
-  1.0prerelese   1.0
-  1.0.prerelese  1.0
-
-  1.0  1.0patch
-  1.0  1.0.patch
->>;
-
-#- testing ---------------------------------------------------------------------
-plan 2 * @equal + 2 * @less;
-
-sub test($left, &compare, $right, $expected, int $line) is test-assertion {
-    my $vleft  := Version::Repology.new($left);
-    my $vright := Version::Repology.new($right);
-
-    my $infix := &compare.name.match(
-      / ['«' <( <-[»]>+] | ['<' <( <-[>]>+] /
-    ).Str;
-
-    unless is-deeply
-      compare($vleft,$vright), $expected, "$expected: $left $infix $right"
-    {
-        note "On line $line: $vleft.cmp($vright)";
-        note "   left: $vleft.parts.join(':') $vleft.ranks()";
-        note "  right: $vright.parts.join(':') $vright.ranks()";
-#        exit;
-    }
+for \(:upper-bound), \(:bound<upper>) -> \c {
+    my $u = Version::Repology.new("1.0", |c);
+    isa-ok $u, Version::Repology;
+    is-deeply $u.bound, upper-bound, 'did we get an upper-bound';
 }
 
-for @equal -> $left, $right {
-    test $left, &[==], $right, True,  $equal-line;
-    test $left, &[>=], $right, True,  $equal-line;
-    test $left, &[<=], $right, True,  $equal-line;
-    test $left, &[!=], $right, False, $equal-line;
-    ++$equal-line;
-}
-
-for @less -> $left, $right {
-    test $left, &[<],  $right, True,  $less-line;
-    test $left, &[<=], $right, True,  $less-line;
-    test $left, &[>],  $right, False, $less-line;
-    test $left, &[!=], $right, True,  $less-line;
-    ++$less-line;
+for \(:lower-bound), \(:bound<lower>) -> \c {
+    my $l = Version::Repology.new("1.0", |c);
+    isa-ok $l, Version::Repology;
+    is-deeply $l.bound, lower-bound, 'did we get a lower-bound';
 }
 
 # vim: expandtab shiftwidth=4

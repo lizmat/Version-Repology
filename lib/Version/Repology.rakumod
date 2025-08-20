@@ -31,6 +31,8 @@ class Version::Repology:ver<0.0.1>:auth<zef:lizmat> {
             :$p-is-patch,
             :$any-is-patch,
             :$bound,
+            :$lower-bound,
+            :$upper-bound,
     --> Nil) {
 
         $!bound := $bound.defined
@@ -39,14 +41,18 @@ class Version::Repology:ver<0.0.1>:auth<zef:lizmat> {
             !! $bound eq 'lower'
               ?? lower-bound
               !! die "Unknown bound indicator: $bound.  Must be 'upper' or 'lower'"
-          !! zero;
+          !! $lower-bound
+            ?? lower-bound
+            !! $upper-bound
+              ?? upper-bound
+              !! zero;
 
         my @parts;
         my @ranks;
 
         my sub add-number($number --> Nil) {
             @parts.push: $number;
-            @ranks.push: $number ?? non-zero !! $!bound;
+            @ranks.push: $number ?? non-zero !! zero;
         }
 
         for $spec.comb(/ <[ 0..9 a..z A..Z ]>+ /) -> $outer {
@@ -112,50 +118,61 @@ class Version::Repology:ver<0.0.1>:auth<zef:lizmat> {
     method cmp(Version::Repology:D: Version::Repology:D $other --> Order) {
         my @oparts := $other.parts;
         my @oranks := $other.ranks;
+        my $obound := $other.bound;
 
+        # Start with comparing ranks
         my int $i;
         for @!ranks -> $rank {
-            if $rank cmp (@oranks[$i] // $!bound) -> $diff {
-                return $diff;
+
+            # Something to compare with
+            with @oranks[$i] -> $orank {
+                if $rank cmp $orank -> $diff {
+                    return $diff;  # UNCOVERABLE
+                }
             }
+
+            # Nothing to compare with, is right side is always upper?
             else {
-                my $left  := @!parts[$i];
-                my $right := @oparts[$i];
-
-                if $left.WHAT =:= $right.WHAT {
-                    if $left cmp $right -> $diff {
-                        return $diff;
-                    }
-                }
-
-                # I'd say that intuitively 1.0 < 1.0a < 1.0.1 because
-                # a seems to be tighter "variant" of 1.0 than the "next
-                # release" 1.0.1, and it would also correspond to how
-                # general alphabetic parts are ordered (a < 1), but we
-                # still stick to 1.0 < 1.0.1 < 1.0a order, because in
-                # practice no valid cases were found to be broken by
-                # this, but a number of cases where incorrectly written
-                # versions (1.0a as 1.0.1) were favored upon genuine
-                # ones appeared.
-                elsif $left ~~ Int {  # && $right ~~ Str
-                    return Less
+                if $rank cmp $obound -> $diff {
+                    return $diff;  # UNCOVERABLE
                 }
             }
+
+            # Ranks the same, need to check parts
+            my $left  := @!parts[$i];
+            my $right := @oparts[$i];
+
+            # Same types can use cmp semantics for comparison
+            if $left.WHAT =:= $right.WHAT {
+                if $left cmp $right -> $diff {
+                    return $diff;  # UNCOVERABLE
+                }
+            }
+
+            # I'd say that intuitively 1.0 < 1.0a < 1.0.1 because
+            # a seems to be tighter "variant" of 1.0 than the "next
+            # release" 1.0.1, and it would also correspond to how
+            # general alphabetic parts are ordered (a < 1), but we
+            # still stick to 1.0 < 1.0.1 < 1.0a order, because in
+            # practice no valid cases were found to be broken by
+            # this, but a number of cases where incorrectly written
+            # versions (1.0a as 1.0.1) were favored upon genuine
+            # ones appeared.
+            elsif $left ~~ Int {  # && $right ~~ Str  # UNCOVERABLE
+                return Less
+            }
+
             ++$i;
         }
 
         # More on the right-hand side
         with @oranks[$i] -> $rank {
-            $rank < $!bound
-              ?? More
-              !! $rank > $!bound
-                ?? Less
-                !! Same
+            $!bound cmp $rank
         }
 
-        # Nothing left to check
+        # Same so far, with nothing left to check
         else {
-            Same
+             $!bound cmp $obound
         }
     }
 }

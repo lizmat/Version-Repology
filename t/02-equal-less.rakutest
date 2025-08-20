@@ -1,0 +1,223 @@
+use Test;
+use Version::Repology;
+
+#- Same ------------------------------------------------------------------------
+my int $equal-line = $?LINE + 2;
+my @equal = <<
+  0            0
+  0a           0a
+  a            a
+  a0           a0
+  0a1          0a1
+  0a1b2        0a1b2
+  1alpha1      1alpha1
+  foo          foo
+  1.2.3        1.2.3
+  hello.world  hello.world
+
+  1    1.0
+  1    1.0.0
+  1.0  1.0.0
+  1.0  1.0.0.0.0.0.0.0
+
+  00100.00100  100.100
+  0            000000000000000
+
+  1.0a0     1.0.a0
+  1.0beta3  1.0.b3
+
+  a       A
+  1alpha  1ALPHA
+  alpha1  ALPHA1
+
+  a  alpha
+  b  beta
+  p  prerelease
+
+  1.0.alpha.2  1_0_alpha_2
+  1.0.alpha.2  1-0-alpha-2
+  1.0.alpha.2  '1,0:alpha-2'
+
+  ..1....2....3..  1.2.3
+  .-~1~-.-~2~-     1.2
+  .,:;~+-_         0
+
+  ""  ""
+  ""  0
+
+  1.0alpha1  1.0alpha1
+  1.0alpha1  1.0.alpha1
+  1.0alpha1  1.0alpha.1
+  1.0alpha1  1.0.alpha.1
+
+  1.0patch1  1.0patch1
+  1.0patch1  1.0.patch1
+  1.0patch1  1.0patch.1
+  1.0patch1  1.0.patch.1
+>>;
+
+#- Less ------------------------------------------------------------------------
+my int $less-line = $?LINE + 4;
+my @less = <<
+  0.0.0           0.0.1
+  0.0.1           0.0.2
+  0.0.2           0.0.10
+  0.0.2           0.1.0
+  0.0.10          0.1.0
+  0.1.0           0.1.1
+  0.1.1           10.0.0
+  10.0.0          100.0.0
+  10.10000.10000  11.0.0
+
+  999999999999999999                      1000000000000000000
+  99999999999999999999999999999999999998  99999999999999999999999999999999999999
+
+  1.0   1.0a
+  1.0a  1.0b
+  1.0b  1.1
+  a     0
+  1.a   1.0
+
+  1.0.a  1.0.b
+  1.0.b  1.0.c
+  1.0.c  1.0.0
+
+  ""  1
+
+  1.0.alpha1  1.0.alpha2
+  1.0.alpha2  1.0.beta1
+  1.0.beta1   1.0.beta2
+  1.0.beta2   1.0.rc1
+  1.0.beta2   1.0.pre1
+  1.0.rc1     1.0
+  1.0.pre1    1.0
+
+  1.0alpha1  1.0alpha2
+  1.0alpha2  1.0beta1
+  1.0beta1   1.0beta2
+  1.0beta2   1.0pre1
+  1.0rc1     1.0
+  1.0pre1    1.0
+
+  0.9        1.0alpha1
+  1.0alpha1  1.0
+  1.0alpha1  1.0.1
+  1.0alpha1  1.1
+
+  0.9       1.0beta1
+  1.0beta1  1.0
+  1.0beta1  1.0.1
+  1.0beta1  1.1
+
+  0.9       1.0pre-1
+  1.0pre-1  1.0
+  1.0pre-1  1.0.1
+  1.0pre-1  1.1
+
+  0.9              1.0prerelease-1
+  1.0prerelease-1  1.0
+  1.0prerelease-1  1.0.1
+  1.0prerelease-1  1.1
+
+  0.9      1.0rc-1
+  1.0rc-1  1.0
+  1.0rc-1  1.0.1
+  1.0rc-1  1.1
+
+  0.9        1.0patch1
+  1.0        1.0patch1
+  1.0patch1  1.0.1
+  1.0patch1  1.1
+
+  0.9         1.0.patch1
+  1.0         1.0.patch1
+  1.0.patch1  1.0.1
+  1.0.patch1  1.1
+
+  0.9         1.0patch.1
+  1.0         1.0patch.1
+  1.0patch.1  1.0.1
+  1.0patch.1  1.1
+
+  0.9          1.0.patch.1
+  1.0          1.0.patch.1
+  1.0.patch.1  1.0.1
+  1.0.patch.1  1.1
+
+  0.9       1.0post1
+  1.0       1.0post1
+  1.0post1  1.0.1
+  1.0post1  1.1
+
+  0.9                       1.0postanythinggoeshere1
+  1.0                       1.0postanythinggoeshere1
+  1.0postanythinggoeshere1  1.0.1
+  1.0postanythinggoeshere1  1.1
+
+  0.9     1.0pl1
+  1.0     1.0pl1
+  1.0pl1  1.0.1
+  1.0pl1  1.1
+
+  0.9         1.0errata1
+  1.0         1.0errata1
+  1.0errata1  1.0.1
+  1.0errata1  1.1
+
+  1.0alpha   1.0
+  1.0.alpha  1.0
+
+  1.0beta   1.0
+  1.0.beta  1.0
+
+  1.0rc   1.0
+  1.0.rc  1.0
+
+  1.0pre   1.0
+  1.0.pre  1.0
+
+  1.0prerelese   1.0
+  1.0.prerelese  1.0
+
+  1.0  1.0patch
+  1.0  1.0.patch
+>>;
+
+#- testing ---------------------------------------------------------------------
+plan 2 * @equal + 2 * @less;
+
+sub test($left, &compare, $right, $expected, int $line) is test-assertion {
+    my $vleft  := Version::Repology.new($left);
+    my $vright := Version::Repology.new($right);
+
+    my $infix := &compare.name.match(
+      / ['«' <( <-[»]>+] | ['<' <( <-[>]>+] /
+    ).Str;
+
+    unless is-deeply
+      compare($vleft,$vright), $expected, "$expected: $left $infix $right"
+    {
+        note "On line $line: $vleft.cmp($vright)";
+        note "   left: $vleft.parts.join(':') $vleft.ranks()";
+        note "  right: $vright.parts.join(':') $vright.ranks()";
+#        exit;
+    }
+}
+
+for @equal -> $left, $right {
+    test $left, &[==], $right, True,  $equal-line;
+    test $left, &[>=], $right, True,  $equal-line;
+    test $left, &[<=], $right, True,  $equal-line;
+    test $left, &[!=], $right, False, $equal-line;
+    ++$equal-line;
+}
+
+for @less -> $left, $right {
+    test $left, &[<],  $right, True,  $less-line;
+    test $left, &[<=], $right, True,  $less-line;
+    test $left, &[>],  $right, False, $less-line;
+    test $left, &[!=], $right, True,  $less-line;
+    ++$less-line;
+}
+
+# vim: expandtab shiftwidth=4

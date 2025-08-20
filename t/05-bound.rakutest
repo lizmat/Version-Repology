@@ -2,7 +2,7 @@ use Test;
 use Version::Repology;
 
 #- bound -----------------------------------------------------------------------
-my int $bound-line = $?LINE + 2;
+my int $bound-line = $?LINE + 4;
 my @bound = <<
   0.99999    1.0  Any  Any  Less
   1.0alpha   1.0  Any  Any  Less
@@ -14,9 +14,9 @@ my @bound = <<
   1.1        1.0  Any  Any  More
 
   0.99999    1.0  Any  lower  Less
-  1.0alpha   1.0  Any  lower  Less
-  1.0alpha0  1.0  Any  lower  Less
-  1.0        1.0  Any  lower  Same
+  1.0alpha   1.0  Any  lower  More
+  1.0alpha0  1.0  Any  lower  More
+  1.0        1.0  Any  lower  More
   1.0patch   1.0  Any  lower  More
   1.0patch0  1.0  Any  lower  More
   1.0.1      1.0  Any  lower  More
@@ -29,7 +29,7 @@ my @bound = <<
   1.0patch   1.0  Any  upper  Less
   1.0patch0  1.0  Any  upper  Less
   1.0.1      1.0  Any  upper  Less
-  1.1        1.0  Any  upper  Less
+  1.1        1.0  Any  upper  More
 
   1.0  1.0  lower  lower  Same
   1.0  1.0  upper  upper  Same
@@ -57,7 +57,7 @@ for @bound -> $left, $right, $bound-left, $bound-right, $order {
         note "On line $bound-line: $vleft.cmp($vright)";
         note "   left: $vleft.parts.join(':') $vleft.ranks()";
         note "  right: $vright.parts.join(':') $vright.ranks()";
-#        exit;
+        exit;
     }
     ++$bound-line;
 }
