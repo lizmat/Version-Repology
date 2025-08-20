@@ -70,6 +70,7 @@ my $p = Version::Repology.new("1.0", :p-is-patch);
 my $a = Version::Repology.new("1.0", :any-is-patch);
 my $u = Version::Repology.new("1.0", :upper-bound);
 my $l = Version::Repology.new("1.0", :lower-bound);
+my $n = Version::Repology.new("0.0.1", :no-leading-zero);
 =end code
 
 The basic instantion of a C<Version::Repology> object is done with
@@ -100,6 +101,15 @@ being B<higher> in version.  Can also be specified as C<:bound<upper>>.
 
 If in comparison two objects are the same, then select this one as
 being B<lower> in version.  Can also be specified as C<:bound<lower>>.
+
+=head2 :no-leading-zero
+
+Remove any leading C<0> parts from a version string so that C<0.0.1>
+is the same as C<1>.  If not specified, or specified with a false
+value, will B<not> remove any leading C<0> parts.
+
+This feature is an additional feature in the Raku implementation
+only.
 
 =head1 EXPORTED INFIXES
 

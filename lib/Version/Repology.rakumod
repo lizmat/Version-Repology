@@ -17,7 +17,7 @@ my constant %special =
 my constant @special-keys = %special.keys.sort(-*.chars);
 
 #- Version::Repology -----------------------------------------------------------
-class Version::Repology:ver<0.0.1>:auth<zef:lizmat> {
+class Version::Repology:ver<0.0.2>:auth<zef:lizmat> {
     has @.parts;
     has $.bound;
     has @.ranks is built(False);
@@ -27,12 +27,13 @@ class Version::Repology:ver<0.0.1>:auth<zef:lizmat> {
     }
 
     submethod TWEAK(
-      Str:D :$spec,
+      Str:D :$spec is copy,
             :$p-is-patch,
             :$any-is-patch,
             :$bound,
             :$lower-bound,
             :$upper-bound,
+            :$no-leading-zero,
     --> Nil) {
 
         $!bound := $bound.defined
@@ -55,6 +56,7 @@ class Version::Repology:ver<0.0.1>:auth<zef:lizmat> {
             @ranks.push: $number ?? non-zero !! zero;
         }
 
+        $spec .= subst(/ ^ <[0 \W]>+ /) if $no-leading-zero;
         for $spec.comb(/ <[ 0..9 a..z A..Z ]>+ /) -> $outer {
             with $outer.Int -> $number {
                 add-number($number);

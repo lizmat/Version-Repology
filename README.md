@@ -80,6 +80,7 @@ my $p = Version::Repology.new("1.0", :p-is-patch);
 my $a = Version::Repology.new("1.0", :any-is-patch);
 my $u = Version::Repology.new("1.0", :upper-bound);
 my $l = Version::Repology.new("1.0", :lower-bound);
+my $n = Version::Repology.new("0.0.1", :no-leading-zero);
 ```
 
 The basic instantion of a `Version::Repology` object is done with the `new` method, taking the version string as a positional argument.
@@ -105,6 +106,13 @@ If in comparison two objects are the same, then select this one as being **highe
 ------------
 
 If in comparison two objects are the same, then select this one as being **lower** in version. Can also be specified as `:bound<lower>`.
+
+:no-leading-zero
+----------------
+
+Remove any leading `0` parts from a version string so that `0.0.1` is the same as `1`. If not specified, or specified with a false value, will **not** remove any leading `0` parts.
+
+This feature is an additional feature in the Raku implementation only.
 
 EXPORTED INFIXES
 ================
