@@ -199,6 +199,32 @@ The following `infix` candidates handling `Version::Repology` are exported:
 
   * eqv == != < <= > >= (returns `Bool`)
 
+EXPORTED ENUMS
+==============
+
+Rank
+----
+
+The `Rank` enum is used internally to facilitate the comparison between two objects. It is probably of little use outside the scope of the module itself. But just in case it **may** be useful in some situations, it **is** exported.
+
+It provides the following numeric enum values:
+
+  * none
+
+  * lower-bound
+
+  * pre-release
+
+  * zero
+
+  * post-release
+
+  * non-zero
+
+  * letter-suffix
+
+  * upper-bound
+
 ALGORITHM
 =========
 

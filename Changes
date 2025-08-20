@@ -1,6 +1,8 @@
 Revision history for Version::Repology
 
 {{$NEXT}}
+
+0.0.3  2025-08-20T18:56:18+02:00
     - Add infix methods: == != <= < > >=
     - Also export infix:<eqv> candidate
     - Add more tests and much more documentation
