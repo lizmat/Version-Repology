@@ -1,6 +1,8 @@
 Revision history for Version::Repology
 
 {{$NEXT}}
+
+0.0.4  2025-08-22T16:56:24+02:00
     - Add support for ":special" and ":additional-special"
       arguments
     - Add accessor method "special"
