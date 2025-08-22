@@ -1,0 +1,57 @@
+use Test;
+use Version::Repology;
+
+plan 17;
+
+my %special = r => pre-release;
+
+my $v1 = Version::Repology.new("1.0");
+is $v1.raku, 'Version::Repology.new("1.0")',
+  "is .raku of $v1 ok";
+is-deeply $v1.ranks, (non-zero,zero),
+  "are ranks of $v1 ok";
+
+my $ve = Version::Repology.new("1.errata");
+is $ve.raku, 'Version::Repology.new("1.errata")',
+  "is .raku of $ve ok";
+is-deeply $ve.ranks, (non-zero,post-release),
+  "are ranks of $ve ok";
+
+my $v1s = Version::Repology.new("1.r1", :%special);
+is $v1s.raku, 'Version::Repology.new("1.r1", :special(:r(pre-release)))',
+  "is .raku of $v1s ok";
+is-deeply $v1s.ranks, (non-zero,pre-release,non-zero),
+  "are ranks of $v1s ok";
+
+my $ves = Version::Repology.new("1.errata", :%special);
+is $ves.raku, 'Version::Repology.new("1.errata", :special(:r(pre-release)))',
+  "is .raku of $ves ok";
+is-deeply $ves.ranks, (non-zero,pre-release),
+  "are ranks of $ves ok";
+
+# Normal logic, errata is post-release
+is-deeply $v1."<"($ve),   True, "is $v1 less then $ve";
+
+# "r" is pre-release
+is-deeply $v1s."<"($v1),  True, "is $v1s less then $v1";
+
+# "r" is pre-release, errata is post-release
+is-deeply $v1s."<"($ve),  True, "is $v1s less then $ve";
+
+# "r" and errata are pre-release, "e" before "r"
+is-deeply $ves."<"($v1s), True, "is $ves less then $v1s";
+
+my $v1a = Version::Repology.new("1.r1", :additional-special(%special));
+is $v1a.raku, 'Version::Repology.new("1.r1", :additional-special(:r(pre-release)))',
+  "is .raku of $v1a ok";
+is-deeply $v1a.ranks, (non-zero,pre-release,non-zero), "are ranks of $v1a ok";
+
+my $vea = Version::Repology.new("1.errata", :additional-special(%special));
+is $vea.raku, 'Version::Repology.new("1.errata", :additional-special(:r(pre-release)))',
+  "is .raku of $vea ok";
+is-deeply $vea.ranks, (non-zero,post-release), "are ranks of $vea ok";
+
+# "r" is pre-release, errata is post-release
+is-deeply $v1a."<"($vea),  True, "is $v1a less then $vea";
+
+# vim: expandtab shiftwidth=4

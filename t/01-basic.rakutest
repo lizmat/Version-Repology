@@ -7,7 +7,7 @@ my $v = Version::Repology.new("1.0foo.bar");
 isa-ok $v, Version::Repology;
 
 is $v, "1.0.f.b", 'is stringification correct';
-is $v.raku, 'Version::Repology.new("1.0.f.b")', 'is .raku ok';
+is $v.raku, 'Version::Repology.new("1.0foo.bar")', 'is .raku ok';
 is-deeply $v.parts, (1,0,"f","b"), 'are the parts ok';
 is-deeply $v.ranks, (non-zero, zero, letter-suffix, pre-release),
   'are the ranks ok';

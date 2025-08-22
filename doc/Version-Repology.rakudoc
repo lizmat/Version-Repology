@@ -111,6 +111,22 @@ value, will B<not> remove any leading C<0> parts.
 
 This is an additional feature in the Raku implementation only.
 
+=head2 :special
+
+If specified, should contain a C<Hash> of strings that should get
+special ordering treatment, with a C<Rank> as a value, B<excluding>
+any strings that receive special treatment by default.
+
+This is an additional feature in the Raku implementation only.
+
+=head2 :additional-special
+
+If specified, should contain a C<Hash> of strings that should get
+special ordering treatment (with a C<Rank> as a value), additionally
+or instead of any strings that receive special treatment by default.
+
+This is an additional feature in the Raku implementation only.
+
 =head1 ACCESSORS
 
 =head1 parts
@@ -143,6 +159,16 @@ say $a.bound;  # upper-bound
 Returns the special bound C<Rank> value.  This is C<zero> by default,
 but can be changed with the C<:upper-bound> and C<:lower-bound> named
 arguments on object instantiation.
+
+=head1 special
+
+=begin code :lang<raku>
+my $a  = Version::Repology.new("1.0");
+say $a.special;  # Map.new((alpha => pre-release, beta => pre-release...
+=end code
+
+Returns the C<Map> of the strings that are getting special ranking
+treatment.
 
 =head1 OTHER METHODS
 
@@ -234,7 +260,7 @@ Source can be located at: https://github.com/lizmat/Version-Repology .
 Comments and Pull Requests are welcome.
 
 If you like this module, or what I’m doing more generally, committing to a
-L<small sponsorship|https://github.com/sponsors/lizmat/>  would mean a great
+L<small sponsorship|https://github.com/sponsors/lizmat/> would mean a great
 deal to me!
 
 =head1 COPYRIGHT AND LICENSE

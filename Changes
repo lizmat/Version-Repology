@@ -1,9 +1,14 @@
 Revision history for Version::Repology
 
 {{$NEXT}}
+    - Add support for ":special" and ":additional-special"
+      arguments
+    - Add accessor method "special"
+    - The "raku" method now returns the specification verbatim
+      for better readability and roundtrippability
 
 0.0.3  2025-08-20T18:56:18+02:00
-    - Add infix methods: == != <= < > >=
+    - Add infix methods: "==" "!=" "<=" "<" ">" ">="
     - Also export infix:<eqv> candidate
     - Add more tests and much more documentation
 

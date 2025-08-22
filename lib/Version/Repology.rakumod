@@ -4,7 +4,7 @@ enum Rank <none lower-bound
   upper-bound
 >;
 
-my constant %special =
+my constant %repology-special =
   "alpha",   pre-release,
   "beta",    pre-release,
   "rc",      pre-release,
@@ -14,13 +14,16 @@ my constant %special =
   "pl",      post-release,
   "errata",  post-release,
 ;
-my constant @special-keys = %special.keys.sort(-*.chars);
+my constant @repology-special-keys = %repology-special.keys.sort(-*.chars);
 
 #- Version::Repology -----------------------------------------------------------
-class Version::Repology:ver<0.0.3>:auth<zef:lizmat> {
+class Version::Repology:ver<0.0.4>:auth<zef:lizmat> {
     has @.parts;
     has $.bound;
-    has @.ranks is built(False);
+    has @.ranks   is built(False);  # done in TWEAK
+    has %.special is built(False);  # done in TWEAK
+    has $.raku    is built(False);  # done in TWEAK
+    has @!special-keys;
 
     multi method new(Version::Repology: Str() $spec) {
         self.bless(:$spec, |%_)
@@ -34,8 +37,11 @@ class Version::Repology:ver<0.0.3>:auth<zef:lizmat> {
             :$lower-bound,
             :$upper-bound,
             :$no-leading-zero,
+            :%special,
+            :%additional-special,
     --> Nil) {
 
+        # Set up bound logic
         $!bound := $bound.defined
           ?? $bound eq 'upper'
             ?? upper-bound
@@ -48,6 +54,37 @@ class Version::Repology:ver<0.0.3>:auth<zef:lizmat> {
               ?? upper-bound
               !! zero;
 
+        # Set up any special strings handling
+        my $raku := self.^name ~ qq/.new("$spec")/;
+
+        my sub special-keys(%map) {
+            %map.keys.sort( { $^b.chars < $^a.chars || $^a cmp $^b } ).List
+        }
+        my sub raku-keys(%map, @keys) {
+            @keys.map(
+              -> $key { ":" ~ $key ~ "($_)" with %map{$key} }
+            ).join(", ")
+        }
+
+        my @keys;
+        if %special {
+            %!special := %special.Map;
+            @keys := special-keys(%special);
+            $raku := "$raku.chop(), :special(&raku-keys(%!special, @keys)))";
+        }
+        elsif %additional-special {
+            my %map is Map = |%repology-special, |%additional-special;
+            %!special := %map;
+            @keys := special-keys(%map);
+            $raku := "$raku.chop(), :additional-special(&raku-keys(%additional-special, @keys)))";
+        }
+        else {
+            %!special := %repology-special;
+            @keys := @repology-special-keys;
+        }
+        @!special-keys := @keys;
+
+        # Process the specification and create parts/ranks
         my @parts;
         my @ranks;
 
@@ -66,13 +103,13 @@ class Version::Repology:ver<0.0.3>:auth<zef:lizmat> {
                   .comb(/ \d+ | <[ a..z A..Z ]>+ /)
                   .map: { .Int // $_ }
 
-                for @inner.kv -> int $i, $part is copy {
+                for @inner.kv -> int $i, $part {
                     if $part ~~ Int {
                         add-number($part);
                     }
                     else {
-                        $part .= lc;
-                        @parts.push: $part.substr(0,1);  # 1st letter only
+                        my $lc-part := $part.lc;
+                        @parts.push: $lc-part.substr(0,1);  # 1st letter only
                         @ranks.push: do if $any-is-patch {
                             post-release
                         }
@@ -87,14 +124,14 @@ class Version::Repology:ver<0.0.3>:auth<zef:lizmat> {
                               && @inner[$i-1] ~~ Int     # following numeric
                               && $i == @inner.end        # last one
                               ?? letter-suffix
-                              !! $p-is-patch && $part eq 'p'
+                              !! $p-is-patch && $lc-part eq 'p'
                                 ?? post-release
                                 !! pre-release;
 
                             # Handle the special cases
-                            for @special-keys {
-                                if $part.starts-with($_) {
-                                    $rank = %special{$_};
+                            for @keys {
+                                if $lc-part.starts-with($_) {
+                                    $rank = %!special{$_};
                                     last;
                                 }
                             }
@@ -108,14 +145,11 @@ class Version::Repology:ver<0.0.3>:auth<zef:lizmat> {
 
         @!parts := @parts.List;
         @!ranks := @ranks.List;
+        $!raku  := $raku;  # UNCOVERABLE
     }
 
-    multi method Str(Version::Repology:D:) {
-        @!parts.join(".")
-    }
-    multi method raku(Version::Repology:D:) {
-        self.^name ~ ".new(" ~ self.Str.raku ~ ")"
-    }
+    multi method Str(Version::Repology:D:) { @!parts.join(".") }
+    multi method raku(Version::Repology:D:) { $!raku }
 
     method cmp(Version::Repology:D: Version::Repology:D $other --> Order) {
         my @oparts := $other.parts;

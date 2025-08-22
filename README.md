@@ -115,6 +115,20 @@ Remove any leading `0` parts from a version string so that `0.0.1` is the same a
 
 This is an additional feature in the Raku implementation only.
 
+:special
+--------
+
+If specified, should contain a `Hash` of strings that should get special ordering treatment, with a `Rank` as a value, **excluding** any strings that receive special treatment by default.
+
+This is an additional feature in the Raku implementation only.
+
+:additional-special
+-------------------
+
+If specified, should contain a `Hash` of strings that should get special ordering treatment (with a `Rank` as a value), additionally or instead of any strings that receive special treatment by default.
+
+This is an additional feature in the Raku implementation only.
+
 ACCESSORS
 =========
 
@@ -147,6 +161,16 @@ say $a.bound;  # upper-bound
 ```
 
 Returns the special bound `Rank` value. This is `zero` by default, but can be changed with the `:upper-bound` and `:lower-bound` named arguments on object instantiation.
+
+special
+=======
+
+```raku
+my $a  = Version::Repology.new("1.0");
+say $a.special;  # Map.new((alpha => pre-release, beta => pre-release...
+```
+
+Returns the `Map` of the strings that are getting special ranking treatment.
 
 OTHER METHODS
 =============
