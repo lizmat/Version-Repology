@@ -1,6 +1,8 @@
 Revision history for Version::Repology
 
 {{$NEXT}}
+
+0.0.5  2025-08-24T12:26:29+02:00
     - Add support for ":leading-zero-alpha" named argument
     - Add tests for .raku roundtrippability
 

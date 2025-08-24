@@ -1,8 +1,6 @@
 use Test;
 use Version::Repology;
 
-plan 17;
-
 my @tests = 
   %(),
   %(:p-is-patch),
