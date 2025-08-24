@@ -17,7 +17,7 @@ my constant %repology-special =
 my constant @repology-special-keys = %repology-special.keys.sort(-*.chars);
 
 #- Version::Repology -----------------------------------------------------------
-class Version::Repology:ver<0.0.4>:auth<zef:lizmat> {
+class Version::Repology:ver<0.0.5>:auth<zef:lizmat> {
     has @.parts;
     has $.bound;
     has @.ranks   is built(False);  # done in TWEAK
@@ -37,6 +37,7 @@ class Version::Repology:ver<0.0.4>:auth<zef:lizmat> {
             :$lower-bound,
             :$upper-bound,
             :$no-leading-zero,
+            :$leading-zero-alpha,
             :%special,
             :%additional-special,
     --> Nil) {
@@ -54,9 +55,19 @@ class Version::Repology:ver<0.0.4>:auth<zef:lizmat> {
               ?? upper-bound
               !! zero;
 
-        # Set up any special strings handling
-        my $raku := self.^name ~ qq/.new("$spec")/;
+        # Set up correct .raku representation
+        my str @raku = self.^name ~ qq/.new("$spec"/;
+        if $bound && $bound != zero {
+            @raku.push: $bound == upper-bound
+              ?? ':upper-bound'
+              !! ':lower-bound';
+        }
+        @raku.push: ":p-is-patch"         if $p-is-patch;
+        @raku.push: ":any-is-patch"       if $any-is-patch;
+        @raku.push: ":no-leading-zero"    if $no-leading-zero;
+        @raku.push: ":leading-zero-alpha" if $leading-zero-alpha;
 
+        # Set up any special strings handling
         my sub special-keys(%map) {
             %map.keys.sort( { $^b.chars < $^a.chars || $^a cmp $^b } ).List
         }
@@ -70,13 +81,13 @@ class Version::Repology:ver<0.0.4>:auth<zef:lizmat> {
         if %special {
             %!special := %special.Map;
             @keys := special-keys(%special);
-            $raku := "$raku.chop(), :special(&raku-keys(%!special, @keys)))";
+            @raku.push: ":special(&raku-keys(%!special, @keys))";
         }
         elsif %additional-special {
             my %map is Map = |%repology-special, |%additional-special;
             %!special := %map;
             @keys := special-keys(%map);
-            $raku := "$raku.chop(), :additional-special(&raku-keys(%additional-special, @keys)))";
+            @raku.push: ":additional-special(&raku-keys(%additional-special, @keys))";
         }
         else {
             %!special := %repology-special;
@@ -96,7 +107,13 @@ class Version::Repology:ver<0.0.4>:auth<zef:lizmat> {
         $spec .= subst(/ ^ <[0 \W]>+ /) if $no-leading-zero;
         for $spec.comb(/ <[ 0..9 a..z A..Z ]>+ /) -> $outer {
             with $outer.Int -> $number {
-                add-number($number);
+                if $leading-zero-alpha && $outer.starts-with("0") {
+                    @parts.push: $outer;
+                    @ranks.push: $any-is-patch ?? post-release !! pre-release;
+                }
+                else {
+                    add-number($number);
+                }
             }
             else {
                 my @inner = $outer
@@ -145,7 +162,7 @@ class Version::Repology:ver<0.0.4>:auth<zef:lizmat> {
 
         @!parts := @parts.List;
         @!ranks := @ranks.List;
-        $!raku  := $raku;  # UNCOVERABLE
+        $!raku  := @raku.join(", ") ~ ")";
     }
 
     multi method Str(Version::Repology:D:) { @!parts.join(".") }

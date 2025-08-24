@@ -111,6 +111,15 @@ value, will B<not> remove any leading C<0> parts.
 
 This is an additional feature in the Raku implementation only.
 
+=head2 :leading-zero-alpha
+
+Treat any leading C<0> in otherwise numerical parts from a version
+string as B<alphabetical> rather than numerical in comparisons. If
+not specified, or specified with a false value, will consider these
+parts as numerical in comparisons.
+
+This is an additional feature in the Raku implementation only.
+
 =head2 :special
 
 If specified, should contain a C<Hash> of strings that should get

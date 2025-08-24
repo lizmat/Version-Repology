@@ -115,6 +115,13 @@ Remove any leading `0` parts from a version string so that `0.0.1` is the same a
 
 This is an additional feature in the Raku implementation only.
 
+:leading-zero-alpha
+-------------------
+
+Treat any leading `0` in otherwise numerical parts from a version string as **alphabetical** rather than numerical in comparisons. If not specified, or specified with a false value, will consider these parts as numerical in comparisons.
+
+This is an additional feature in the Raku implementation only.
+
 :special
 --------
 

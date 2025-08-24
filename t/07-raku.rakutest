@@ -1,0 +1,32 @@
+use Test;
+use Version::Repology;
+
+plan 17;
+
+my @tests = 
+  %(),
+  %(:p-is-patch),
+  %(:any-is-patch),
+  %(:upper-bound),
+  %(:lower-bound),
+  %(:no-leading-zero),
+  %(:leading-zero-alpha),
+  %(:special( %(:r(pre-release)) )),
+  %(:additional-special( %(:r(pre-release)) )),
+  %(:any-is-patch, :upper-bound),
+;
+
+plan 3 * @tests;
+
+for @tests -> %nameds {
+    my $v1 = Version::Repology.new("1.0.pre", |%nameds);
+    isa-ok $v1, Version::Repology;
+
+    my $raku = $v1.raku;
+    my $v2   = $raku.EVAL;
+    isa-ok $v2, Version::Repology;
+
+    is $v1.raku, $v2.raku, "did the .raku roundtrip for %nameds.raku()";
+}
+
+# vim: expandtab shiftwidth=4

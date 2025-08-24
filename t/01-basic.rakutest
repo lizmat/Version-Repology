@@ -1,7 +1,7 @@
 use Test;
 use Version::Repology;
 
-plan 33;
+plan 36;
 
 my $v = Version::Repology.new("1.0foo.bar");
 isa-ok $v, Version::Repology;
@@ -49,5 +49,21 @@ for \(:lower-bound), \(:bound<lower>) -> \c {
 my $no0 = Version::Repology.new("0.0.1", :no-leading-zero);
 isa-ok $v, Version::Repology;
 is $no0, "1", 'did the leading zeroes get removed';
+
+my $lza1 = Version::Repology.new(
+  "4.5.14",
+  :additional-special( %(:r(post-release) ) ),
+  :leading-zero-alpha
+);
+isa-ok $v, Version::Repology;
+
+my $lza2 = Version::Repology.new(
+  "4.09-r1",
+  :additional-special( %(:r(post-release) ) ),
+  :leading-zero-alpha
+);
+isa-ok $v, Version::Repology;
+
+is-deeply $lza1.cmp($lza2), More, 'did 09 get compared alphabatically';
 
 # vim: expandtab shiftwidth=4

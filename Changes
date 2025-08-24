@@ -1,10 +1,12 @@
 Revision history for Version::Repology
 
 {{$NEXT}}
+    - Add support for ":leading-zero-alpha" named argument
+    - Add tests for .raku roundtrippability
 
 0.0.4  2025-08-22T16:56:24+02:00
     - Add support for ":special" and ":additional-special"
-      arguments
+      named arguments
     - Add accessor method "special"
     - The "raku" method now returns the specification verbatim
       for better readability and roundtrippability
