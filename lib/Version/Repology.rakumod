@@ -17,11 +17,12 @@ my constant %repology-special =
 my constant @repology-special-keys = %repology-special.keys.sort(-*.chars);
 
 #- Version::Repology -----------------------------------------------------------
-class Version::Repology:ver<0.0.5>:auth<zef:lizmat> {
+class Version::Repology:ver<0.0.6>:auth<zef:lizmat> {
     has @.parts;
     has $.bound;
     has @.ranks   is built(False);  # done in TWEAK
     has %.special is built(False);  # done in TWEAK
+    has $.Str     is built(False);  # done in TWEAK
     has $.raku    is built(False);  # done in TWEAK
     has @!special-keys;
 
@@ -162,10 +163,11 @@ class Version::Repology:ver<0.0.5>:auth<zef:lizmat> {
 
         @!parts := @parts.List;
         @!ranks := @ranks.List;
+        $!Str   := $spec;
         $!raku  := @raku.join(", ") ~ ")";
     }
 
-    multi method Str(Version::Repology:D:) { @!parts.join(".") }
+    multi method Str( Version::Repology:D:) { $!Str  }
     multi method raku(Version::Repology:D:) { $!raku }
 
     method cmp(Version::Repology:D: Version::Repology:D $other --> Order) {
